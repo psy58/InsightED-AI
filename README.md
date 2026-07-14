@@ -11,10 +11,10 @@
 
 ### 📖 프로젝트 소개 (Introduction)
 **[KR]** 
-학생 관찰 일지, 상담 기록 등 정형화되지 않은 비정형 데이터를 AI가 분석하여 교사의 교육적 의사결정을 돕는 시스템입니다. 교사가 AI와 원활하게 피드백을 주고받게 하여 최적의 학생 맞춤형 지도 방안을 도출할 수 있도록 설계되었습니다.
+AI융합교육전공 석사 학위논문의 일환으로 설계 및 개발되었습니다. 학생 관찰 일지, 상담 기록 등 교실에서 파편화된 비정형 데이터를 디지털 기반으로 한 곳에 모으고 AI가 분석하여 교사의 교육적 의사결정을 돕는 시스템입니다. 교사가 AI와 원활하게 피드백을 주고받게 하여 최적의 학생 맞춤형 지도 방안을 도출할 수 있도록 설계되었습니다.
 
 **[EN]** 
-An AI-powered system that analyzes unstructured data, such as student observation logs and counseling records, to support teachers' educational decision-making. It is designed to help teachers derive optimal, tailored student guidance by smoothly exchanging feedback with AI.
+This system was designed and developed as part of a Master's thesis in AI Convergence Education. It digitally aggregates fragmented, unstructured data from the classroom—such as student observation logs and counseling records—into a single platform. AI then analyzes this data to support teachers in their educational decision-making. Furthermore, it is designed to enable teachers to smoothly exchange feedback with AI, ultimately helping them derive optimal, personalized student guidance strategies.
 
 ### ✨ 핵심 기능 (Key Features)
 * **비정형 데이터 분석 (Unstructured Data Analysis):** 텍스트 기반의 상담 및 관찰 기록 핵심 요약
@@ -23,7 +23,9 @@ An AI-powered system that analyzes unstructured data, such as student observatio
 
 ### 🛠 기술 및 개발 방식 (Tech Stack & Methodology)
 * **AI Tool:** Google AI Studio, Gemini API
-* **Methodology:** 자연어 기반 바이브 코딩 (Vibe Coding via Prompt Engineering)
+* **Methodology:**
+* 자연어 기반 바이브 코딩 (Vibe Coding via Prompt Engineering)
+* 데이터 처리를 위한 프롬프트 파이프라인 구축 (Data-Driven Prompting)
 
 ### 🚀 로컬 실행 방법 (Run Locally)
 이 프로젝트를 직접 로컬 컴퓨터에서 실행해 볼 수 있습니다. (This contains everything you need to run your app locally.)

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { InformationCircleIcon, DocumentTextIcon } from './icons';
 import { DataSourceType } from '../types';
-import { DataFilter } from '../services/geminiService';
+import { DataFilter } from '../services/aiService';
 
 interface AIReportFocusModalProps {
   isOpen: boolean;

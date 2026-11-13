@@ -6,7 +6,7 @@ import TeacherObservationPreview from './TeacherObservationPreview';
 import VideoRecorderModal from './VideoRecorderModal';
 import CameraCaptureModal from './CameraCaptureModal';
 import { blobToBase64 } from '../utils';
-import { transcribeAndSummarizeAudio, analyzeImage } from '../services/geminiService';
+import { transcribeAndSummarizeAudio, analyzeImage } from '../services/aiService';
 
 const TeacherObservationEditor = () => {
     const { selectedStudent, setCurrentView, addDataSource } = useAcroAppContext();
@@ -82,7 +82,7 @@ const TeacherObservationEditor = () => {
 
         } catch (error) {
             console.error(error);
-            setProcessingError('미디어 처리 중 오류가 발생했습니다.');
+            setProcessingError(error instanceof Error ? error.message : '미디어 처리 중 오류가 발생했습니다.');
         } finally {
             setIsProcessing(false);
             setProcessingMessage('');

@@ -5,7 +5,7 @@ import { View, DataSourceType } from '../types';
 import { ChevronLeftIcon, PaperClipIcon, MicrophoneIcon } from './icons';
 import StudentCounselingPreview from './StudentCounselingPreview';
 import { blobToBase64 } from '../utils';
-import { transcribeAndSummarizeAudio } from '../services/geminiService';
+import { transcribeAndSummarizeAudio } from '../services/aiService';
 
 const StudentCounselingEditor = () => {
     const { selectedStudent, setCurrentView, addDataSource } = useAcroAppContext();
@@ -55,7 +55,7 @@ const StudentCounselingEditor = () => {
             setTranscription(result.transcription);
         } catch (error) {
             console.error(error);
-            setProcessingError('오디오 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+            setProcessingError(error instanceof Error ? error.message : '오디오 처리 중 오류가 발생했습니다.');
         } finally {
             setIsProcessing(false);
         }

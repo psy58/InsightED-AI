@@ -1,10 +1,8 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { requestAI } from "./openaiClient";
 import { Student, DataSource, DataSourceType } from '../types';
 import { MOCK_PEER_RELATIONSHIP_RESULTS, MOCK_STUDENTS } from '../constants';
 
-// Per guidelines, initialize with API key from environment variables.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export interface DataFilter {
     startDate?: string;
@@ -188,12 +186,7 @@ ${allData}
 (이하 다른 데이터 소스들도 동일한 형식으로 반복)
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash', // Using flash for faster summary
-      contents: prompt,
-    });
-    
-    return response.text;
+    return requestAI<string>({ action: "summary", prompt });
 };
 
 export const generateFocusedReport = async (student: Student, topics: string[], filter?: DataFilter): Promise<string> => {
@@ -248,12 +241,7 @@ ${topics.map(topic => `#### ${topic}\n(${topic}에 대한 상세 분석 내용 �
 (분석 내용을 종합하여 교사가 교실에서 즉시 시도해볼 수 있는 구체적이고 실천적인 제안 2가지 이상.)
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-pro',
-      contents: prompt,
-    });
-    
-    return response.text;
+    return requestAI<string>({ action: "report", prompt });
 };
 
 
@@ -294,153 +282,19 @@ export const generateCounselingScenario = async (student: Student, type: '학생
     ---
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: prompt,
-  });
-  
-  return response.text;
+  return requestAI<string>({ action: "scenario", prompt });
 };
 
 
 export const transcribeAndSummarizeAudio = async (base64Audio: string, mimeType: string): Promise<{ transcription: string; summary: string; visualDescription: string }> => {
-  const audioPart = {
-    inlineData: {
-      mimeType: mimeType,
-      data: base64Audio,
-    },
-  };
-  
-  const isVideo = mimeType.startsWith('video/');
-
-  const prompt = isVideo 
-    ? `You are an AI assistant for a teacher. This video file is a teacher's observation of a student.
-      Perform the following tasks and return a single JSON object with three keys: 'visualDescription', 'transcription', and 'summary'.
-      1. 'visualDescription': Describe the visual content of the video in 2-3 short, concise sentences in Korean. Follow this structure: "누가: [student description]\\n어디에서: [location]\\n무엇을: [action description]".
-      2. 'transcription': Transcribe all spoken audio from the video into Korean text. If there is no audio, return an empty string.
-      3. 'summary': Based on the transcription and visual context, summarize the key points in Korean.`
-    : `You are an AI assistant for a teacher. This audio file is from a counseling session.
-      Perform the following tasks and return a single JSON object with three keys: 'visualDescription', 'transcription', and 'summary'.
-      1. 'visualDescription': This is an audio-only file, so return an empty string for this key.
-      2. 'transcription': Transcribe all spoken audio from the file into Korean text.
-      3. 'summary': Based on the transcription, summarize the key points in Korean.`;
-  
-  const schema = {
-    type: Type.OBJECT,
-    properties: {
-        visualDescription: { type: Type.STRING, description: 'A short description of the video content, in Korean. Empty for audio.' },
-        transcription: { type: Type.STRING, description: 'The full transcription of the audio in Korean.' },
-        summary: { type: Type.STRING, description: 'A summary of the transcribed content in Korean.' }
-    },
-    required: ['visualDescription', 'transcription', 'summary']
-  };
-
-  const textPart = { text: prompt };
-  
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-pro',
-    contents: { parts: [audioPart, textPart] },
-    config: {
-        responseMimeType: "application/json",
-        responseSchema: schema,
-    },
-  });
-
-  try {
-    return JSON.parse(response.text);
-  } catch (e) {
-    console.error("Failed to parse Gemini response:", response.text);
-    return {
-      transcription: "오류: AI 응답을 처리할 수 없습니다.",
-      summary: "오류: AI 응답을 처리할 수 없습니다.",
-      visualDescription: ""
-    };
-  }
-};
-
-export const analyzeImage = async (base64Image: string, mimeType: string): Promise<string> => {
-    const imagePart = {
-        inlineData: {
-            mimeType: mimeType,
-            data: base64Image,
-        },
-    };
-
-    const textPart = {
-        text: `
-          이 이미지는 교사가 학생 관찰을 위해 촬영한 사진입니다.
-          사진 속 상황을 아래 항목에 맞춰 2-3문장으로 짧고 간결하게 묘사해주세요.
-
-          - **누가:** (객관적으로 보이는 학생에 대한 간단한 묘사. 예: 파란색 옷을 입은 남학생)
-          - **어디에서:** (장소. 예: 교실, 운동장)
-          - **무엇을:** (하고 있는 행동에 대한 객관적인 묘사)
-
-          결과는 '### 이미지 분석 결과' 헤더 아래에 한 문단으로 통합하여 작성해주세요.
-        `
-    };
-    
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-pro',
-        contents: { parts: [imagePart, textPart] },
-    });
-
-    return response.text;
-};
-
-const reflectionSchema = {
-    type: Type.OBJECT,
-    properties: {
-        extractedText: {
-            type: Type.STRING,
-            description: '이미지에서 추출된 모든 텍스트. 손글씨를 최대한 정확하게 인식해야 함.'
-        },
-        summary: {
-            type: Type.STRING,
-            description: '추출된 텍스트의 핵심 내용을 2-3문장으로 요약.'
-        },
-        keywords: {
-            type: Type.ARRAY,
-            description: '텍스트의 핵심 키워드를 3-5개 추출.',
-            items: { type: Type.STRING }
-        }
-    },
-    required: ['extractedText', 'summary', 'keywords']
-};
-
-export const analyzeReflectionDocument = async (base64Image: string, mimeType: string): Promise<{ extractedText: string, summary: string, keywords: string[] }> => {
-    const imagePart = {
-        inlineData: {
-            mimeType: mimeType,
-            data: base64Image,
-        },
-    };
-
-    const textPart = {
-        text: `
-          이 이미지는 학생이 직접 작성한 성찰 기록 문서입니다. 다음의 3가지 작업을 수행하여 JSON 형식으로 결과를 반환해주세요.
-          1. 'extractedText': 이미지에 있는 모든 손글씨 텍스트를 정확하게 추출해주세요. 원본 문서의 줄바꿈을 유지해주세요.
-          2. 'summary': 추출된 텍스트의 핵심 내용을 2-3문장으로 요약해주세요.
-          3. 'keywords': 내용의 핵심을 나타내는 키워드를 3~5개 추출하여 배열로 만들어주세요.
-        `
-    };
-    
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-pro',
-        contents: { parts: [imagePart, textPart] },
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: reflectionSchema,
-        },
-    });
-
-    try {
-      return JSON.parse(response.text);
-    } catch(e) {
-      console.error("Failed to parse Gemini response:", response.text);
-      return {
-        extractedText: "오류: AI 응답을 처리할 수 없습니다.",
-        summary: "오류: AI 응답을 처리할 수 없습니다.",
-        keywords: [],
-      }
+    if (mimeType.startsWith('video/')) {
+        throw new Error('영상 자동 분석은 현재 지원하지 않습니다. 음성 파일 또는 사진으로 등록해 주세요.');
     }
+    return requestAI({ action: 'audio', data: base64Audio, mimeType });
 };
+
+export const analyzeImage = async (base64Image: string, mimeType: string): Promise<string> =>
+    requestAI({ action: 'image', data: base64Image, mimeType });
+
+export const analyzeReflectionDocument = async (base64Image: string, mimeType: string): Promise<{ extractedText: string; summary: string; keywords: string[] }> =>
+    requestAI({ action: 'reflection', data: base64Image, mimeType });

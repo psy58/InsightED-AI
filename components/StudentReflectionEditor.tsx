@@ -4,7 +4,7 @@ import { View, DataSourceType } from '../types';
 import { ChevronLeftIcon, PaperClipIcon, CameraIcon } from './icons';
 import CameraCaptureModal from './CameraCaptureModal';
 import { blobToBase64 } from '../utils';
-import { analyzeReflectionDocument } from '../services/geminiService';
+import { analyzeReflectionDocument } from '../services/aiService';
 
 const StudentReflectionEditor = () => {
     const { selectedStudent, setCurrentView, addDataSource } = useAcroAppContext();

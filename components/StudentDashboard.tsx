@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useAcroAppContext } from '../context/AppContext';
-import { generateFocusedReport, generateDataSummary, generateCounselingScenario, DataFilter } from '../services/geminiService';
+import { generateFocusedReport, generateDataSummary, generateCounselingScenario, DataFilter } from '../services/aiService';
 import { DataStatus, DataSource, DataSourceType, Student, View } from '../types';
 import { SparklesIcon, ChatBubbleOvalLeftEllipsisIcon } from './icons';
 import DataSourceContentModal from './DataSourceContentModal';

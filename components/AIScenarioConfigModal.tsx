@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DataSourceType } from '../types';
-import { DataFilter } from '../services/geminiService';
+import { DataFilter } from '../services/aiService';
 import { SparklesIcon, XIcon } from './icons';
 
 interface AIScenarioConfigModalProps {
